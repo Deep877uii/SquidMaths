@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Squid Game - Red Light Green Light</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+            overflow: hidden;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 0;
+        }
+        #game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #name-input {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 10;
+            width: 80%;
+            max-width: 300px;
+        }
+        #name-input input {
+            padding: 15px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        #name-input select {
+            padding: 15px;
+            margin: 10px 0;
+            width: 100%;
+            font-size: 16px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #name-input button {
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        #question-container {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            font-size: 24px;
+            z-index: 5;
+            text-align: center;
+            min-width: 200px;
+            max-width: 80%;
+        }
+        #question-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 10px 0;
+            display: block;
+        }
+        #answer-input {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px;
+            font-size: 20px;
+            width: 150px;
+            text-align: center;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+        }
+        #progress-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #question-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 5px;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            min-width: 300px;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: rgba(255, 0, 0, 0.9);
+            border-radius: 5px;
+            font-size: 36px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            min-width: 300px;
+            color: white;
+        }
+        #score-summary {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 30px;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            border-radius: 15px;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            min-width: 350px;
+            border: 3px solid #4CAF50;
+        }
+        #score-summary h2 {
+            margin-top: 0;
+            color: #4CAF50;
+            font-size: 32px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        #score-summary p {
+            margin: 15px 0;
+            font-size: 22px;
+            padding: 10px;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 8px;
+        }
+        #score-summary .score-value {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        #score-summary button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin-top: 25px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        #score-summary button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+        @media (max-width: 600px) {
+            #game-container {
+                height: 300px;
+            }
+            #question-container {
+                font-size: 20px;
+                padding: 10px 20px;
+            }
+            #answer-input {
+                width: 120px;
+                font-size: 18px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="400"></canvas>
+        <audio id="background-music" loop>
+            <source src="/static/assets/mokoba.mp3" type="audio/mpeg">
+        </audio>
+        <div id="name-input">
+            <h2>Enter Your Name</h2>
+            <input type="text" id="player-name" placeholder="Your name">
+            <select id="difficulty-level">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <div style="margin: 10px 0;">
+                <label for="question-count">Number of Questions:</label>
+                <select id="question-count">
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <div style="margin: 10px 0;">
+                <label for="time-limit">Time Limit (minutes):</label>
+                <select id="time-limit">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </div>
+            <button onclick="startGame()">Start Game</button>
+        </div>
+        <div id="question-container" style="display: none;">
+            <div id="question-text"></div>
+            <img id="question-image" style="display: none;">
+        </div>
+        <div id="progress-info" style="display: none;">
+            <span id="timer-display"></span>
+        </div>
+        <div id="question-counter" style="display: none; position: absolute; top: 10px; left: 10px; background-color: rgba(255, 255, 255, 0.7); padding: 5px 10px; border-radius: 5px; font-size: 14px;">
+            Questions: <span id="questions-answered">0</span>/<span id="total-questions">0</span>
+        </div>
+        <div id="question-number" style="display: none;">
+            Question <span id="current-question">1</span>/<span id="question-count">0</span>
+        </div>
+        <div id="feedback">
+            <span id="feedback-text"></span>
+        </div>
+        <div id="game-over">
+            <span>GAME OVER!</span>
+            <br>
+            <button onclick="location.reload()">Play Again</button>
+        </div>
+        <div id="score-summary">
+            <h2>Game Complete!</h2>
+            <p>Total Score: <span id="final-score" class="score-value">0</span></p>
+            <p>Correct Answers: <span id="correct-count" class="score-value">0</span></p>
+            <p>Wrong Answers: <span id="wrong-count" class="score-value">0</span></p>
+            <p>Accuracy: <span id="accuracy" class="score-value">0%</span></p>
+            <button onclick="location.reload()">Play Again</button>
+        </div>
+        <input type="text" id="answer-input" style="display: none;" onkeypress="handleAnswer(event)">
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const nameInput = document.getElementById('name-input');
+        const questionContainer = document.getElementById('question-container');
+        const questionText = document.getElementById('question-text');
+        const questionImage = document.getElementById('question-image');
+        const answerInput = document.getElementById('answer-input');
+        const progressInfo = document.getElementById('progress-info');
+        const questionsAnsweredSpan = document.getElementById('questions-answered');
+        const totalQuestionsSpan = document.getElementById('total-questions');
+        
+        let playerId = null;
+        let playerName = null;
+        let gameState = null;
+        let playerPosition = 0;
+        let currentPlayerX = 50; // Track current X position for smooth movement
+        let targetPlayerX = 50;  // Track target X position
+        let movementSpeed = 0.2; // Adjust this value to change movement speed (lower = slower, higher = faster)
+        let playerAlive = true;
+        let currentProblem = null;
+        let currentImage = null;
+        let canFinish = false;
+        let minQuestions = 3;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        // Game assets
+        const assets = {
+            background: new Image(),
+            player: new Image(),
+            doll: new Image()
+        };
+
+        // Load assets
+        assets.background.src = '/static/assets/background.jpg';
+        assets.player.src = '/static/assets/player.png';
+        assets.doll.src = '/static/assets/doll.png';
+
+        function startGame() {
+            playerName = document.getElementById('player-name').value.trim();
+            const difficulty = document.getElementById('difficulty-level').value;
+            const questionCount = parseInt(document.getElementById('question-count').value);
+            const timeLimit = parseInt(document.getElementById('time-limit').value);
+            
+            if (!playerName) {
+                alert('Please enter your name');
+                return;
+            }
+
+            // Reset player position
+            playerPosition = 0;
+            currentPlayerX = 50;
+            targetPlayerX = 50;
+
+            // Set time limit
+            timeLeft = timeLimit * 60; // Convert minutes to seconds
+            updateTimerDisplay();
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+
+            // Start background music
+            const backgroundMusic = document.getElementById('background-music');
+            backgroundMusic.volume = 0.3; // Set volume to 30%
+            backgroundMusic.play().catch(error => {
+                console.log('Autoplay prevented:', error);
+            });
+
+            // Generate a unique player ID
+            playerId = 'player_' + Date.now();
+            
+            // Join the game
+            fetch('/api/game/join', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: playerId,
+                    name: playerName,
+                    difficulty: difficulty,
+                    questionCount: questionCount
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    nameInput.style.display = 'none';
+                    questionContainer.style.display = 'block';
+                    answerInput.style.display = 'block';
+                    progressInfo.style.display = 'block';
+                    getNewProblem();
+                    startGameLoop();
+                }
+            });
+        }
+
+        function getNewProblem() {
+            if (!playerId) return;
+            
+            fetch(`/api/game/problem?userId=${playerId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        if (data.problem.startsWith('Error:')) {
+                            alert(data.problem);
+                            location.reload();
+                            return;
+                        }
+                        
+                        // Update question text
+                        questionText.textContent = data.problem;
+                        
+                        // Update question image if available
+                        if (data.image) {
+                            questionImage.src = `data:image/png;base64,${data.image}`;
+                            questionImage.style.display = 'block';
+                        } else {
+                            questionImage.style.display = 'none';
+                        }
+                        
+                        // Update progress info
+                        questionsAnsweredSpan.textContent = data.questions_answered;
+                        totalQuestionsSpan.textContent = data.question_count;
+                        minQuestions = data.min_questions;
+                        canFinish = data.can_finish;
+                        
+                        // Update question number
+                        document.getElementById('current-question').textContent = data.current_question;
+                        document.getElementById('question-count').textContent = data.question_count;
+                        
+                        // Reset answer input
+                        answerInput.value = '';
+                        answerInput.focus();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching problem:', error);
+                    alert('Error loading question. Please check if questions.json is properly configured.');
+                    location.reload();
+                });
+        }
+
+        function startGameLoop() {
+            // Start the game loop
+            setInterval(updateGame, 1000/60); // 60 FPS
+            setInterval(updateGameState, 1000); // Update game state every second
+        }
+
+        function updateGameState() {
+            fetch('/api/game/state')
+                .then(response => response.json())
+                .then(state => {
+                    gameState = state;
+                });
+        }
+
+        function updateGame() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.drawImage(assets.background, 0, 0, canvas.width, canvas.height);
+
+            // Draw doll at the bottom right
+            const dollWidth = 100;
+            const dollHeight = 150;
+            ctx.drawImage(assets.doll, canvas.width - dollWidth, canvas.height - dollHeight, dollWidth, dollHeight);
+
+            // Calculate player position with step-by-step movement
+            const totalQuestions = parseInt(document.getElementById('question-count').value);
+            const stepSize = 50; // Fixed step size for clear movement
+            const targetX = 50 + (playerPosition * stepSize);
+            
+            // Draw player at current position
+            if (playerAlive) {
+                ctx.drawImage(assets.player, targetX, canvas.height - 100, 50, 70);
+            }
+
+            // Draw score with enhanced style
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(10, 10, 150, 40);
+            ctx.fillStyle = '#4CAF50';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText(`Score: ${playerPosition * 10}`, 20, 35);
+            
+            // Draw progress bar
+            const progressBarWidth = 200;
+            const progressBarHeight = 10;
+            const progressBarX = (canvas.width - progressBarWidth) / 2;
+            const progressBarY = 20;
+            
+            // Background of progress bar
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(progressBarX, progressBarY, progressBarWidth, progressBarHeight);
+            
+            // Progress
+            const progress = playerPosition / totalQuestions;
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(progressBarX, progressBarY, progressBarWidth * progress, progressBarHeight);
+        }
+
+        function handleAnswer(event) {
+            if (event.key === 'Enter') {
+                const answer = answerInput.value.trim().toUpperCase();
+                if (!answer) {
+                    alert('Please enter an answer');
+                    return;
+                }
+
+                fetch('/api/game/move', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: playerId,
+                        answer: answer
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const gameOver = document.getElementById('game-over');
+                        const scoreSummary = document.getElementById('score-summary');
+                        
+                        if (data.is_correct) {
+                            playerPosition = data.position;
+                            // Add a small delay before getting next question
+                            setTimeout(() => {
+                                getNewProblem();
+                            }, 500);
+                        } else {
+                            getNewProblem();
+                        }
+                        
+                        // Clear answer
+                        answerInput.value = '';
+                        answerInput.focus();
+                        
+                        // Update progress info
+                        questionsAnsweredSpan.textContent = data.questions_answered;
+                        document.getElementById('total-questions').textContent = data.question_count;
+                        canFinish = data.can_finish;
+                        
+                        // Update question number
+                        document.getElementById('current-question').textContent = data.current_question;
+                        document.getElementById('question-count').textContent = data.question_count;
+                        
+                        if (!playerAlive) {
+                            gameOver.style.display = 'block';
+                            answerInput.style.display = 'none';
+                            questionContainer.style.display = 'none';
+                            progressInfo.style.display = 'none';
+                            document.getElementById('question-number').style.display = 'none';
+                        } else if (data.reached_limit) {
+                            // Calculate accuracy
+                            const accuracy = (data.correct_answers / data.question_count) * 100;
+                            
+                            // Show enhanced score summary
+                            document.getElementById('final-score').textContent = data.score;
+                            document.getElementById('correct-count').textContent = data.correct_answers;
+                            document.getElementById('wrong-count').textContent = data.wrong_answers;
+                            document.getElementById('accuracy').textContent = `${accuracy.toFixed(1)}%`;
+                            
+                            // Add celebration effect
+                            scoreSummary.style.display = 'block';
+                            scoreSummary.style.animation = 'popIn 0.5s ease-out';
+                            
+                            // Hide other elements
+                            answerInput.style.display = 'none';
+                            questionContainer.style.display = 'none';
+                            progressInfo.style.display = 'none';
+                            document.getElementById('question-number').style.display = 'none';
+                            
+                            // Stop background music
+                            const backgroundMusic = document.getElementById('background-music');
+                            backgroundMusic.pause();
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            updateTimerDisplay();
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                const gameOver = document.getElementById('game-over');
+                gameOver.style.display = 'block';
+                answerInput.style.display = 'none';
+                questionContainer.style.display = 'none';
+                progressInfo.style.display = 'none';
+                document.getElementById('question-number').style.display = 'none';
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timerDisplay = document.getElementById('timer-display');
+            if (timerDisplay) {
+                timerDisplay.textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        // Add event listener for page visibility change
+        document.addEventListener('visibilitychange', function() {
+            const backgroundMusic = document.getElementById('background-music');
+            if (document.hidden) {
+                backgroundMusic.pause();
+            } else {
+                backgroundMusic.play().catch(error => {
+                    console.log('Autoplay prevented:', error);
+                });
+            }
+        });
+
+        // Add image load event listeners
+        assets.player.onload = function() {
+            console.log('Player image loaded');
+            // Force a redraw when the image loads
+            updateGame();
+        };
+        assets.player.onerror = function() {
+            console.error('Error loading player image');
+        };
+
+        // Initial game state update
+        updateGameState();
+    </script>
+</body>
+</html> 
